@@ -9,8 +9,15 @@
     "scripts": ["eventPage.js"],
     "persistent": false
   },
+
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+
   "permissions": [
     "webNavigation",
-    "alarms"
+    "alarms",
+    "storage"
   ]
 }
