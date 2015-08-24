@@ -5,7 +5,8 @@
       { hostSuffix: "twitter.com" }
     ]
     storage = chrome.storage.sync
-    filter = null
+    filter = url: DEFAULT_SITES
+    cooldown = 5
 
 The listener is where most of the action happens. This code fires on page
 navigate and is where we inject the content script. At this point filtering
@@ -32,34 +33,40 @@ filtering on Chrome-side without even loading our code.
 
 We receive a message from the page when the confirm button is clicked. When
 this happens we turn off all our listeners (so no more confirm dialogs will
-appear) and set an alarm to turn them back on after 5 minutes.
+appear) and set an alarm to turn them back on after a configurable cooldown.
 
     msgListener = (msg) ->
       return unless msg is "clicked"
-      chrome.runtime.onMessage.removeListener msgListener
       unlisten()
-      chrome.alarms.create delayInMinutes: 5
+      chrome.alarms.create delayInMinutes: cooldown
 
 
 Reload the stored sites from Chrome's synchronised storage. We just bail on
 errors here because there's not much we can realistically do about them.
 
     reload = ->
-      storage.get 'sites', (result) ->
-        return unless result and Array.isArray result.sites
-        filter = url: result.sites
+      storage.get ['sites', 'cooldown'], (result) ->
+        return unless result
+        filter = url: result.sites if Array.isArray result.sites
+        cooldown = result.cooldown if result.cooldown
         unlisten()
         listen()
 
-First-time setup. If there's no stored sites (including if the storage API is
-somehow broken) we just use the defaults.
+First-time setup. If there aren't any stored sites (including if the storage
+API is somehow broken) we just use the defaults.
 
-    storage.get 'sites', (result) ->
-      if result and Array.isArray result.sites
+    storage.get ['sites', 'cooldown'], (result) ->
+      return unless result
+
+      if Array.isArray result.sites
         filter = url: result.sites
       else
-        filter = url: DEFAULT_SITES
         storage.set sites: DEFAULT_SITES
+
+      if result.cooldown
+        cooldown = result.cooldown
+      else
+        storage.set cooldown: 5
 
 Only start listening if we haven't deliberately removed our listeners (because
 we're waiting for the alarm to turn them back on).

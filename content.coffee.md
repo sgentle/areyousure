@@ -1,3 +1,7 @@
+We don't want to ever have more than one of these on a page.
+
+    return if document.getElementById 'areyousure'
+
 This is our content blob. It contains an svg circle to do hold-and-confirm as
 seen here: http://sgentle.github.io/hold-to-confirm/
 
@@ -35,6 +39,17 @@ directly to the html element because document.body doesn't exist yet.
     document.children[0].appendChild dialog
     dialog.showModal()
 
+Create a dynamic style element so we can customise the hold time
+
+    style = document.createElement 'style'
+    document.children[0].appendChild style
+    setHoldTime = (time) ->
+      content = """
+        #areyousure-button:active #areyousure-circle {
+          transition: stroke-dashoffset #{time}s linear !important;
+        }
+      """
+      style.textContent = content
 
 Add listeners so we know when to dismiss the dialog.
 
@@ -43,23 +58,28 @@ Add listeners so we know when to dismiss the dialog.
     button = dialog.querySelector '#areyousure-button'
     text = dialog.querySelector '#areyousure-text'
 
-    button.addEventListener 'mousedown', (ev) ->
-      return unless ev.button is 0
+    chrome.storage.sync.get 'holdTime', (result) ->
+      holdTime = result.holdTime or 2
+      setHoldTime holdTime
 
-      timer = setTimeout ->
-        clickable = true
-        button.classList.add 'activated'
-      , 2000
+      button.addEventListener 'mousedown', (ev) ->
+        return unless ev.button is 0
 
-    button.addEventListener 'mouseup', ->
-      clearTimeout timer
-      button.classList.remove 'activated'
+        timer = setTimeout ->
+          clickable = true
+          button.classList.add 'activated'
+        , holdTime * 1000
 
-    button.addEventListener 'click', (e) ->
-      return unless clickable
+      button.addEventListener 'mouseup', ->
+        clearTimeout timer
+        button.classList.remove 'activated'
 
-      text.textContent = '✔'
-      button.classList.add 'completed'
-      dialog.close()
-      dialog.remove()
-      chrome.runtime.sendMessage "clicked"
+      button.addEventListener 'click', (e) ->
+        return unless clickable
+
+        text.textContent = '✔'
+        button.classList.add 'completed'
+        dialog.close()
+        dialog.remove()
+        style.remove()
+        chrome.runtime.sendMessage "clicked"
