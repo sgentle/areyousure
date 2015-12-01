@@ -7,6 +7,7 @@
     storage = chrome.storage.sync
     filter = url: DEFAULT_SITES
     cooldown = 5
+    urlRegex = /^(([^:\/?#]+):)?(\/\/([^\/:?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/
 
 The listener is where most of the action happens. This code fires on page
 navigate and is where we inject the content script. At this point filtering
@@ -18,16 +19,25 @@ has already happened so we must be on one of the sites in our filter list.
       chrome.tabs.insertCSS ev.tabId, file: "content.css", runAt: "document_start"
       chrome.tabs.executeScript ev.tabId, file: "content.js", runAt: "document_start"
 
+    tabReplacedListener = (ev) ->
+      chrome.tabs.get ev.tabId, (tab) ->
+        domain = urlRegex.exec(tab.url)?[4]
+        return unless domain
+        for site in filter.url
+          return listener(ev) if domain.match new RegExp site.hostSuffix + '$'
+
 Listen and unlisten methods. This API is very efficient, and does all the
 filtering on Chrome-side without even loading our code.
 
     listen = ->
       chrome.alarms.clearAll()
       chrome.webNavigation.onCommitted.addListener listener, filter
+      chrome.webNavigation.onTabReplaced.addListener tabReplacedListener
       chrome.runtime.onMessage.addListener msgListener
 
     unlisten = ->
       chrome.webNavigation.onCommitted.removeListener listener
+      chrome.webNavigation.onTabReplaced.removeListener tabReplacedListener
       chrome.runtime.onMessage.removeListener msgListener
 
 

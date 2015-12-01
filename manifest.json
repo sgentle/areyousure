@@ -3,7 +3,7 @@
 
   "name": "Are you sure?",
   "description": "Confirm before you visit certain websites",
-  "version": "2.1",
+  "version": "2.2",
 
   "icons": {
     "16": "icon16.png",
@@ -25,6 +25,7 @@
     "<all_urls>",
     "webNavigation",
     "alarms",
+    "tabs",
     "storage"
   ]
 }
