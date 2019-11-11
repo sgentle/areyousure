@@ -1,22 +1,35 @@
 #areyousure {
   border: none;
   background-color: rgba(0,0,0,0);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #areyousure::backdrop {
   background-color: rgba(0,0,0,0.8);
 }
 
-#areyousure-button {
+#areyousure button {
+  display: block;
+  cursor: pointer;
   width: 240px;
   height: 240px;
-  vertical-align:middle;
-  cursor: default;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
+  border: none;
+  background: inherit;
+  vertical-align: middle;
 }
-#areyousure-circle {
+
+#areyousure button:focus {
+  outline: none;
+}
+
+#areyousure circle {
   fill: #3F51B5;
   stroke: #C5CAE9;
   stroke-width: 10;
@@ -25,15 +38,14 @@
   transition: stroke-dashoffset 0s linear;
   transform: translate(120px,120px) rotate(90deg) translate(-120px,-120px);
 }
-#areyousure-button:active #areyousure-circle {
+
+#areyousure button:active circle {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 2s linear;
 }
-#areyousure-button.activated #areyousure-circle {
+
+#areyousure button.completed circle {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 0s linear;
   fill: #C5CAE9;
-}
-#areyousure-button.completed #areyousure-text {
-  font-size: 36px;
 }

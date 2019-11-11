@@ -5,3 +5,7 @@ build:
 
 watch:
 	coffee -cw .
+
+zip:
+	rm -f ../areyousure.zip
+	zip ../areyousure.zip *

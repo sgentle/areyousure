@@ -16,7 +16,6 @@ has already happened so we must be on one of the sites in our filter list.
     listener = (ev) ->
       return if ev.frameId > 0
 
-      chrome.tabs.insertCSS ev.tabId, file: "content.css", runAt: "document_start"
       chrome.tabs.executeScript ev.tabId, file: "content.js", runAt: "document_start"
 
     tabReplacedListener = (ev) ->
